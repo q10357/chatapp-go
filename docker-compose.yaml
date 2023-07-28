@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  authservice:
+    build: ./authservice
+    ports:
+      - 8080:8080
+  gatewayservice:
+    build: ./gateservice
+    ports:
+      - 8081:8081
