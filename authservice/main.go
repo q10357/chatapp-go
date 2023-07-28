@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/q10357/AuthWGo/auth"
@@ -15,7 +16,9 @@ func main() {
 	errLoadEnv := godotenv.Load()
 
 	if errLoadEnv != nil {
-		log.Fatal(".env file couldn't be loaded")
+		if !os.IsNotExist(errLoadEnv) {
+			log.Fatal("Error loading .env file", errLoadEnv)
+		}
 	}
 
 	fmt.Println("Server starting...")
@@ -29,7 +32,7 @@ func main() {
 	mux.Handle("/auth/", http.StripPrefix("/auth", authMux))
 
 	server := &http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    ":8080",
 		Handler: mux,
 	}
 
