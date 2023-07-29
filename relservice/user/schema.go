@@ -1,14 +1,14 @@
-package schema
+package user
 
 import (
 	"github.com/graphql-go/graphql"
 )
 
-var userType = graphql.NewObject(
+var UserType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
-			"relId": &graphql.Field{
+			"id": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"username": &graphql.Field{
