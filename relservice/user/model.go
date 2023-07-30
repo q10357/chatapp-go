@@ -2,7 +2,7 @@ package user
 
 type User struct {
 	Id       int    `json:"userId"`
-	Username string `json:"name"`
+	Username string `json:"username"`
 }
 
 // Faking data

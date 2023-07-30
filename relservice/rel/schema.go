@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/graphql-go/graphql"
-	"github.com/q10357/RelService/user"
 )
 
 var relType = graphql.NewObject(
@@ -15,8 +14,11 @@ var relType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"user": &graphql.Field{
-				Type: user.UserType,
+			"user1": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"user2": &graphql.Field{
+				Type: graphql.Int,
 			},
 		},
 	},
@@ -31,9 +33,6 @@ var relQueries = graphql.NewObject(
 				Args: graphql.FieldConfigArgument{
 					"userId": &graphql.ArgumentConfig{
 						Type: graphql.Int,
-					},
-					"user": &graphql.ArgumentConfig{
-						Type: user.UserType,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
