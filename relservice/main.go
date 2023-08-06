@@ -1,12 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
-
-	"database/sql"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
@@ -19,33 +18,87 @@ import (
 	"github.com/q10357/RelService/web/schemas"
 )
 
+type Config struct {
+	DBUser string
+	DBPass string
+	DBName string
+	DevEnv bool
+	Port   string
+}
+
 func main() {
-	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
-		log.Fatalf("Error loading .env file: %v", err)
+	cfg, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	cfg := mysql.Config{
-		User:   os.Getenv("DBUSER"),
-		Passwd: os.Getenv("DBPASS"),
-		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: os.Getenv("DBNAME"),
-	}
-
-	db, err := sql.Open("mysql", cfg.FormatDSN())
+	db, err := setupDatabase(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	router := setupRouter(db, cfg)
+
+	host := "127.0.0.1"
+	if !cfg.DevEnv {
+		host = ""
+	}
+
+	router.Run(fmt.Sprintf("%s:%s", host, cfg.Port))
+}
+
+func loadConfig() (*Config, error) {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	isDevEnv, err := strconv.ParseBool(os.Getenv("DEV_ENV"))
+	if err != nil {
+		log.Fatalf("Error converting env variable: %v", err)
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8082"
+	}
+
+	cfg := &Config{
+		DBUser: os.Getenv("DBUSER"),
+		DBPass: os.Getenv("DBPASS"),
+		DBName: os.Getenv("DBNAME"),
+		DevEnv: isDevEnv,
+		Port:   port,
+	}
+
+	return cfg, nil
+}
+
+func setupDatabase(cfg *Config) (*sql.DB, error) {
+	dbCfg := mysql.Config{
+		User:   cfg.DBUser,
+		Passwd: cfg.DBPass,
+		Net:    "tcp",
+		Addr:   "127.0.0.1:3306",
+		DBName: cfg.DBName,
+	}
+
+	db, err := sql.Open("mysql", dbCfg.FormatDSN())
+	if err != nil {
+		return nil, err
+	}
+
 	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	fmt.Println("Connected!")
+	return db, nil
+}
 
+func setupRouter(db *sql.DB, cfg *Config) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
-
 	router := gin.Default()
+
 	relRepo := rel.NewRelRepo()
 	userRepo := user.NewUserRepo()
 
@@ -58,20 +111,5 @@ func main() {
 	router.Use(middleware.ValidateHeaders())
 	router.POST("/rel", graph.NewRelGraphRouter(relSchema))
 
-	isDevEnv, err := strconv.ParseBool(os.Getenv("DEV_ENV"))
-	if err != nil {
-		log.Fatalf("Error converting env variable: %v", err)
-	}
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8082"
-	}
-
-	host := "127.0.0.1"
-	if !isDevEnv {
-		host = ""
-	}
-
-	router.Run(fmt.Sprintf("%s:%s", host, port))
+	return router
 }
