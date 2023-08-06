@@ -8,10 +8,11 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"github.com/q10357/RelService/data/rel"
-	"github.com/q10357/RelService/data/user"
+
+	"github.com/q10357/RelService/database"
+	"github.com/q10357/RelService/database/data/rel"
+	"github.com/q10357/RelService/database/data/user"
 	"github.com/q10357/RelService/services"
 	"github.com/q10357/RelService/web/graph"
 	"github.com/q10357/RelService/web/middleware"
@@ -32,7 +33,13 @@ func main() {
 		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	db, err := setupDatabase(cfg)
+	dbCfg := &database.Config{
+		DBUser: cfg.DBUser,
+		DBPass: cfg.DBPass,
+		DBName: cfg.DBName,
+	}
+
+	db, err := database.InitDatabase(dbCfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,28 +78,6 @@ func loadConfig() (*Config, error) {
 	}
 
 	return cfg, nil
-}
-
-func setupDatabase(cfg *Config) (*sql.DB, error) {
-	dbCfg := mysql.Config{
-		User:   cfg.DBUser,
-		Passwd: cfg.DBPass,
-		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: cfg.DBName,
-	}
-
-	db, err := sql.Open("mysql", dbCfg.FormatDSN())
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Connected!")
-	return db, nil
 }
 
 func setupRouter(db *sql.DB, cfg *Config) *gin.Engine {

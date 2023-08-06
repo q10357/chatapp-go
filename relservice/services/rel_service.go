@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/q10357/RelService/data/rel"
-	"github.com/q10357/RelService/data/user"
+	"github.com/q10357/RelService/database/data/rel"
+	"github.com/q10357/RelService/database/data/user"
 	"github.com/q10357/RelService/dto"
 )
 
