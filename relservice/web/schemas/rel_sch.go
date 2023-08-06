@@ -33,7 +33,9 @@ var relType = graphql.NewObject(
 	},
 )
 
-func (r *Resolver) relsResolve(p graphql.ResolveParams) (interface{}, error) {
+type ResolverFunc func(p graphql.ResolveParams) (interface{}, error)
+
+func (r *Resolver) resolveAuthHeader(p *graphql.ResolveParams) (*int, error) {
 	ctx := p.Context
 
 	userIdValue := ctx.Value("userId")
@@ -46,7 +48,25 @@ func (r *Resolver) relsResolve(p graphql.ResolveParams) (interface{}, error) {
 		return nil, fmt.Errorf("failed to parse userId from request headers")
 	}
 
-	return r.rs.GetRelsByUserId(uint(userId))
+	return &userId, nil
+}
+
+func (r *Resolver) isUserPartOfRelationship(userId, relId uint) bool {
+	// Implement your logic to check the relationship.
+	// You will probably query your relationship database here.
+	// For simplicity, I will return true.
+	userIsPartOfRel, err := r.rs.IsUserIsInRelation(relId, userId)
+
+	if err != nil {
+		return false
+	}
+
+	if !userIsPartOfRel {
+		return false
+	}
+
+	return true
+
 }
 
 func (r *Resolver) CreateRelQueries() *graphql.Object {
@@ -56,12 +76,33 @@ func (r *Resolver) CreateRelQueries() *graphql.Object {
 			Fields: graphql.Fields{
 				"rels": &graphql.Field{
 					Type: graphql.NewList(relType),
+					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+						userId, err := r.resolveAuthHeader(&p)
+						if err != nil {
+							return nil, err
+						}
+						// Rest of your resolver logic goes here
+						return r.rs.GetRelsByUserId(uint(*userId))
+					},
+				},
+			},
+		},
+	)
+}
+
+func (r *Resolver) CreateRelMutations() *graphql.Object {
+	return graphql.NewObject(
+		graphql.ObjectConfig{
+			Name: "RelMutations",
+			Fields: graphql.Fields{
+				"acceptRel": &graphql.Field{
+					Type: relType,
 					Args: graphql.FieldConfigArgument{
-						"userId": &graphql.ArgumentConfig{
+						"id": &graphql.ArgumentConfig{
 							Type: graphql.Int,
 						},
 					},
-					Resolve: r.relsResolve,
+					/*Here i will accept the incitation from the requester, how can i check the user is a part of relationship here also?*/
 				},
 			},
 		},

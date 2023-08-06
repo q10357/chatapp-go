@@ -1,6 +1,10 @@
 package rel
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
 
 type RelRepo struct {
 	UserRels []*UserRel
@@ -66,6 +70,22 @@ func (r *RelRepo) UpdateRel(id uint, amended *UserRel) (*UserRel, error) {
 		}
 	}
 	return nil, fmt.Errorf("key '%d' not found", amended.ID)
+}
+
+func (r *RelRepo) AcceptRel(id uint, userId uint) (*UserRel, error) {
+	for i, it := range r.UserRels {
+		if it.ID == id {
+			if it.UserIdRequested != userId {
+				return nil, errors.New("Unauthorized")
+			}
+			it.Status = "ACCEPTED"
+			it.UpdatedAt = time.Now()
+			r.UserRels = append(r.UserRels[:i], r.UserRels[i+1:]...)
+			r.UserRels = append(r.UserRels, it)
+			return it, nil
+		}
+	}
+	return nil, fmt.Errorf("key '%d' not found", id)
 }
 
 func (r *RelRepo) DeleteRelById(id uint) (bool, error) {

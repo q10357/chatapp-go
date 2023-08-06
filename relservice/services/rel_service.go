@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/q10357/RelService/data/rel"
 	"github.com/q10357/RelService/data/user"
 	"github.com/q10357/RelService/dto"
@@ -18,33 +16,61 @@ func NewRelService(rr rel.IRelRepo[rel.UserRel], ur user.IUserRepo[user.User]) *
 }
 
 func (r *RelService) GetRelsByUserId(userId uint) ([]*dto.UserRelDto, error) {
-	fmt.Printf("UserId: %d\n", userId)
 	rels, err := r.relRepo.GetRelsByUserId(userId)
-	var tmp = []*dto.UserRelDto{}
+	var dtos = []*dto.UserRelDto{}
 
 	for _, rel := range rels {
-		var otherId uint
-		if rel.UserIdRequester == userId {
-			otherId = rel.UserIdRequested
-		} else {
-			otherId = rel.UserIdRequester
+		dto, err := r.ToUserRelDto(rel, userId)
+		if err != nil {
+			return nil, err
 		}
-
-		tmp = append(tmp, r.ToUserRelDto(rel, otherId))
+		dtos = append(dtos, dto)
 	}
 
-	return tmp, err
+	return dtos, err
 }
 
-func (r *RelService) ToUserRelDto(userRel *rel.UserRel, otherUserId uint) *dto.UserRelDto {
-	otherUser, err := r.userRepo.GetUserById(otherUserId)
+func (r *RelService) IsUserIsInRelation(relId uint, userId uint) (bool, error) {
+	rel, err := r.relRepo.GetRelById(relId)
+
 	if err != nil {
-		// handle error
+		return false, err
+	}
+
+	if userId != rel.UserIdRequested && userId != rel.UserIdRequester {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+func (r *RelService) SetRelStatusToAccepted(id uint, userId uint) (*dto.UserRelDto, error) {
+	rel, err := r.relRepo.AcceptRel(id, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.ToUserRelDto(rel, userId)
+}
+
+func (r *RelService) ToUserRelDto(rel *rel.UserRel, userId uint) (*dto.UserRelDto, error) {
+	var otherId uint
+	if rel.UserIdRequester == userId {
+		otherId = rel.UserIdRequested
+	} else {
+		otherId = rel.UserIdRequester
+	}
+
+	otherUser, err := r.userRepo.GetUserById(otherId)
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &dto.UserRelDto{
-		Id:            userRel.ID,
+		Id:            rel.ID,
 		OtherUsername: otherUser.Username,
-		Status:        userRel.Status,
-	}
+		Status:        rel.Status,
+	}, nil
 }
