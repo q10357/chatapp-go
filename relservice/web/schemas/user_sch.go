@@ -1,4 +1,4 @@
-package user
+package schemas
 
 import (
 	"github.com/graphql-go/graphql"
