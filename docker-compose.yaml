@@ -8,7 +8,23 @@ services:
       - "8080:8080"
     env_file:
       - ./authservice/.env
+  relservice:
+    build: 
+      context: ./relservice
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
   ##gatewayservice:
     ##build: ./gateservice
     ##ports:
      ## - 8081:8081
+  user_db: 
+    image: mysql:8.0.34
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: golang-docker
+    container_name: golang-docker-db
+    ports:
+      - 33066:3306
