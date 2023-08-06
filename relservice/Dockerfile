@@ -15,7 +15,6 @@ WORKDIR /
 
 COPY --from=build-stage /docker-gs-relservice /docker-gs-relservice
 
-
 EXPOSE 8082
 
 USER nonroot:nonroot

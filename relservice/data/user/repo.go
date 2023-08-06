@@ -7,21 +7,12 @@ type UserRepo struct {
 }
 
 func NewUserRepo() *UserRepo {
-	var ur = &UserRepo{make([]*User, 0)}
-
-	var u1 = User{
-		1,
-		"issichik",
+	return &UserRepo{
+		userObjs: []*User{
+			{Id: 1, Username: "issichik"},
+			{Id: 2, Username: "checkers"},
+		},
 	}
-
-	var u2 = User{
-		2,
-		"checkers",
-	}
-
-	ur.userObjs = append(ur.userObjs, &u1)
-	ur.userObjs = append(ur.userObjs, &u2)
-	return ur
 }
 
 func (u *UserRepo) CreateUser(partial *User) *User {

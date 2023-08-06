@@ -11,27 +11,15 @@ type RelRepo struct {
 }
 
 func NewRelRepo() *RelRepo {
-	var rr = RelRepo{make([]*UserRel, 0)}
-	var uRel1 = NewUserRel(
-		1,
-		2,
-		1,
-	)
-
-	/*var uRel2 = NewUserRel(
-		2,
-		1,
-		2,
-	)*/
-
-	rr.UserRels = append(rr.UserRels, uRel1)
-	//rr.UserRels = append(rr.UserRels, uRel2)
-	return &rr
+	return &RelRepo{
+		UserRels: []*UserRel{
+			NewUserRel(1, 2, 1),
+		},
+	}
 }
 
 func (r *RelRepo) GetRelsByUserId(userId uint) ([]*UserRel, error) {
-	fmt.Printf("UserId: %d\n", userId)
-	rels := []*UserRel{}
+	var rels []*UserRel
 	for _, rel := range r.UserRels {
 		if rel.UserIdRequester == userId || rel.UserIdRequested == userId {
 			rels = append(rels, rel)
@@ -64,24 +52,21 @@ func (r *RelRepo) UpdateRel(id uint, amended *UserRel) (*UserRel, error) {
 	for i, it := range r.UserRels {
 		if it.ID == id {
 			amended.ID = id
-			r.UserRels = append(r.UserRels[:i], r.UserRels[i+1:]...)
-			r.UserRels = append(r.UserRels, amended)
+			r.UserRels[i] = amended
 			return amended, nil
 		}
 	}
-	return nil, fmt.Errorf("key '%d' not found", amended.ID)
+	return nil, fmt.Errorf("key '%d' not found", id)
 }
 
 func (r *RelRepo) AcceptRel(id uint, userId uint) (*UserRel, error) {
-	for i, it := range r.UserRels {
+	for _, it := range r.UserRels {
 		if it.ID == id {
 			if it.UserIdRequested != userId {
 				return nil, errors.New("Unauthorized")
 			}
 			it.Status = "ACCEPTED"
 			it.UpdatedAt = time.Now()
-			r.UserRels = append(r.UserRels[:i], r.UserRels[i+1:]...)
-			r.UserRels = append(r.UserRels, it)
 			return it, nil
 		}
 	}

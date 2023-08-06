@@ -12,6 +12,8 @@ services:
     build: 
       context: ./relservice
       dockerfile: Dockerfile
+    env_file:
+      - ./relservice/.env
     ports:
       - "8082:8082"
   ##gatewayservice:

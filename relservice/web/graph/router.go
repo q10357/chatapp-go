@@ -14,41 +14,43 @@ type RequestParams struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
+// NewRelGraphRouter initializes a new GraphQL route handler with the provided schema.
 func NewRelGraphRouter(schema *graphql.Schema) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var reqObj RequestParams
 
-		// Check if the userId was set in the middleware
+		// Extract userId from context
 		userIdStr, exists := c.Get("userId")
-
 		if !exists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "userId not found in context"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "userId not found in context"})
 			return
 		}
 
-		// No need to set the userId again in the context, it was already set in the middleware
-
+		// Bind request data to reqObj
 		if err := c.ShouldBindJSON(&reqObj); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		// Create a new context with userId
 		ctx := context.WithValue(c.Request.Context(), "userId", userIdStr)
 
+		// Execute GraphQL query
 		result := graphql.Do(graphql.Params{
-			Context:        ctx, // Pass the existing Gin context, which already includes the userId
+			Context:        ctx,
 			Schema:         *schema,
 			RequestString:  reqObj.Query,
 			VariableValues: reqObj.Variables,
 			OperationName:  reqObj.Operation,
 		})
 
+		// Handle GraphQL execution errors
 		if len(result.Errors) > 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": result.Errors})
+			c.JSON(http.StatusBadRequest, gin.H{"error": result.Errors})
 			return
-		} else {
-			c.JSON(http.StatusOK, result)
 		}
+
+		// Respond with successful result
+		c.JSON(http.StatusOK, result)
 	}
 }
