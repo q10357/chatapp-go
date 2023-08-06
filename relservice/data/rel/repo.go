@@ -10,18 +10,18 @@ func NewRelRepo() *RelRepo {
 	var rr = RelRepo{make([]*UserRel, 0)}
 	var uRel1 = NewUserRel(
 		1,
-		1,
 		2,
+		1,
 	)
 
-	var uRel2 = NewUserRel(
+	/*var uRel2 = NewUserRel(
 		2,
 		1,
 		2,
-	)
+	)*/
 
 	rr.UserRels = append(rr.UserRels, uRel1)
-	rr.UserRels = append(rr.UserRels, uRel2)
+	//rr.UserRels = append(rr.UserRels, uRel2)
 	return &rr
 }
 

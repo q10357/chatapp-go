@@ -25,9 +25,9 @@ func (r *RelService) GetRelsByUserId(userId uint) ([]*dto.UserRelDto, error) {
 	for _, rel := range rels {
 		var otherId uint
 		if rel.UserIdRequester == userId {
-			otherId = rel.UserIdRequester
-		} else {
 			otherId = rel.UserIdRequested
+		} else {
+			otherId = rel.UserIdRequester
 		}
 
 		tmp = append(tmp, r.ToUserRelDto(rel, otherId))
