@@ -5,6 +5,7 @@ type UserRelDto struct {
 	Id            uint   `json:"id"`
 	OtherUsername string `json:"otherUsername"`
 	Status        string `json:"status"`
+	IsRequester   bool   `json:"isRequester"`
 }
 
 type AdminUserRelDto struct {

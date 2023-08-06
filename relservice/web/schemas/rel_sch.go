@@ -29,6 +29,9 @@ var relType = graphql.NewObject(
 			"status": &graphql.Field{
 				Type: graphql.String,
 			},
+			"isRequester": &graphql.Field{
+				Type: graphql.Boolean,
+			},
 		},
 	},
 )

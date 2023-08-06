@@ -15,6 +15,7 @@ func NewRelService(rr rel.IRelRepo[rel.UserRel], ur user.IUserRepo[user.User]) *
 	return &RelService{relRepo: rr, userRepo: ur}
 }
 
+// This function will return the rels by userid.
 func (r *RelService) GetRelsByUserId(userId uint) ([]*dto.UserRelDto, error) {
 	rels, err := r.relRepo.GetRelsByUserId(userId)
 	var dtos = []*dto.UserRelDto{}
@@ -72,5 +73,6 @@ func (r *RelService) ToUserRelDto(rel *rel.UserRel, userId uint) (*dto.UserRelDt
 		Id:            rel.ID,
 		OtherUsername: otherUser.Username,
 		Status:        rel.Status,
+		IsRequester:   rel.UserIdRequester == userId,
 	}, nil
 }
