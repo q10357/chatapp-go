@@ -8,12 +8,12 @@ import (
 	"github.com/q10357/RelService/services"
 )
 
-type Resolver struct {
+type RelResolver struct {
 	rs *services.RelService
 }
 
-func NewResolver(rs *services.RelService) *Resolver {
-	return &Resolver{rs: rs}
+func NewRelResolver(rs *services.RelService) *RelResolver {
+	return &RelResolver{rs: rs}
 }
 
 var relType = graphql.NewObject(
@@ -33,29 +33,26 @@ var relType = graphql.NewObject(
 	},
 )
 
-type ResolverFunc func(p graphql.ResolveParams) (interface{}, error)
+func (r *RelResolver) getUserIdFromContext(p *graphql.ResolveParams) (*uint, error) {
+	// Get the userID from the context and assert it to an int
+	userIDStr := p.Context.Value("userId").(string)
 
-func (r *Resolver) resolveAuthHeader(p *graphql.ResolveParams) (*int, error) {
-	ctx := p.Context
-
-	userIdValue := ctx.Value("userId")
-	if userIdValue == nil {
-		return nil, fmt.Errorf("userId not found in request headers")
+	if userIDStr == "" {
+		return nil, fmt.Errorf("userID not found in context")
 	}
 
-	userId, err := strconv.Atoi(userIdValue.(string))
+	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse userId from request headers")
+		return nil, fmt.Errorf("error converting ID to int")
 	}
 
-	return &userId, nil
+	userIDUint := uint(userID)
+	return &userIDUint, nil
 }
 
-func (r *Resolver) isUserPartOfRelationship(userId, relId uint) bool {
-	// Implement your logic to check the relationship.
-	// You will probably query your relationship database here.
-	// For simplicity, I will return true.
-	userIsPartOfRel, err := r.rs.IsUserIsInRelation(relId, userId)
+func (r *RelResolver) isUserPartOfRelationship(userID, relId uint) bool {
+	userIsPartOfRel, err := r.rs.IsUserIsInRelation(relId, userID)
 
 	if err != nil {
 		return false
@@ -69,7 +66,7 @@ func (r *Resolver) isUserPartOfRelationship(userId, relId uint) bool {
 
 }
 
-func (r *Resolver) CreateRelQueries() *graphql.Object {
+func (r *RelResolver) CreateRelQueries() *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name: "RelQueries",
@@ -77,12 +74,11 @@ func (r *Resolver) CreateRelQueries() *graphql.Object {
 				"rels": &graphql.Field{
 					Type: graphql.NewList(relType),
 					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-						userId, err := r.resolveAuthHeader(&p)
+						userID, err := r.getUserIdFromContext(&p)
 						if err != nil {
 							return nil, err
 						}
-						// Rest of your resolver logic goes here
-						return r.rs.GetRelsByUserId(uint(*userId))
+						return r.rs.GetRelsByUserId(uint(*userID))
 					},
 				},
 			},
@@ -90,7 +86,7 @@ func (r *Resolver) CreateRelQueries() *graphql.Object {
 	)
 }
 
-func (r *Resolver) CreateRelMutations() *graphql.Object {
+func (r *RelResolver) CreateRelMutations() *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name: "RelMutations",
@@ -110,7 +106,7 @@ func (r *Resolver) CreateRelMutations() *graphql.Object {
 }
 
 func NewRelRootSchema(rs *services.RelService) (*graphql.Schema, error) {
-	resolver := NewResolver(rs)
+	resolver := NewRelResolver(rs)
 	relQueries := resolver.CreateRelQueries()
 
 	schema, err := graphql.NewSchema(

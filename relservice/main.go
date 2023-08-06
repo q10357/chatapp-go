@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/q10357/RelService/data/rel"
 	"github.com/q10357/RelService/data/user"
 	"github.com/q10357/RelService/services"
 	"github.com/q10357/RelService/web/graph"
+	"github.com/q10357/RelService/web/middleware"
 	"github.com/q10357/RelService/web/schemas"
 )
 
@@ -25,10 +25,11 @@ func main() {
 	relSchema, err := schemas.NewRelRootSchema(relService)
 
 	if err != nil {
-		log.Fatalf("Error creating rel schema %s", err)
+		log.Fatalf("Error creating rel schema %d", err)
 	}
 
-	router.Use(cors.Default())
+	//router.Use(cors.Default())
+	router.Use(middleware.ValidateHeaders())
 	router.POST("/rel", graph.NewRelGraphRouter(relSchema))
 
 	port := os.Getenv("PORT")

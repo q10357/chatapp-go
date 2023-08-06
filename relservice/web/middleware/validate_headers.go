@@ -2,33 +2,23 @@ package middleware
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func validateHeaders() gin.HandlerFunc {
+func ValidateHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userIDString := c.GetHeader("UserID")
+		userIDString := c.GetHeader("userId")
 		if userIDString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"status": "UserID not found in header"})
 			c.Abort()
 			return
 		}
 
-		userID, err := strconv.ParseUint(userIDString, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid UserID"})
-			c.Abort()
-			return
-		}
+		// Add the userId to the context
+		c.Set("userId", userIDString)
 
-		if !checkUserInRelDatabase(uint(userID)) {
-			c.JSON(http.StatusForbidden, gin.H{"status": "User not found in the relationship database"})
-			c.Abort()
-			return
-		}
-
+		// Process the request
 		c.Next()
 	}
 }

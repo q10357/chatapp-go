@@ -18,13 +18,13 @@ services:
     ##build: ./gateservice
     ##ports:
      ## - 8081:8081
-  user_db: 
-    image: mysql:8.0.34
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_DATABASE: golang-docker
-    container_name: golang-docker-db
-    ports:
-      - 33066:3306
+##  user_db: 
+##    image: mysql:8.0.34
+##    environment:
+##      MYSQL_ROOT_PASSWORD: root
+##      MYSQL_USER: root
+##      MYSQL_PASSWORD: root
+##      MYSQL_DATABASE: golang-docker-user
+##    container_name: golang-docker-db-rel
+##    ports:
+##      - 33066:3306
