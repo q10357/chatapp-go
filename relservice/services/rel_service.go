@@ -16,12 +16,12 @@ func NewRelService(rr rel.IRelRepo[rel.UserRel], ur user.IUserRepo[user.User]) *
 }
 
 // This function will return the rels by userid.
-func (r *RelService) GetRelsByUserId(userId uint) ([]*dto.UserRelDto, error) {
+func (r *RelService) GetRelsByUserId(userId uint) ([]*dto.UserRelInfo, error) {
 	rels, err := r.relRepo.GetRelsByUserId(userId)
-	var dtos = []*dto.UserRelDto{}
+	var dtos = []*dto.UserRelInfo{}
 
 	for _, rel := range rels {
-		dto, err := r.ToUserRelDto(rel, userId)
+		dto, err := r.ToUserRelResponse(rel, userId)
 		if err != nil {
 			return nil, err
 		}
@@ -45,17 +45,17 @@ func (r *RelService) IsUserIsInRelation(relId uint, userId uint) (bool, error) {
 	}
 }
 
-func (r *RelService) SetRelStatusToAccepted(id uint, userId uint) (*dto.UserRelDto, error) {
+func (r *RelService) SetRelStatusToAccepted(id uint, userId uint) (*dto.UserRelInfo, error) {
 	rel, err := r.relRepo.AcceptRel(id, userId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return r.ToUserRelDto(rel, userId)
+	return r.ToUserRelResponse(rel, userId)
 }
 
-func (r *RelService) ToUserRelDto(rel *rel.UserRel, userId uint) (*dto.UserRelDto, error) {
+func (r *RelService) ToUserRelResponse(rel *rel.UserRel, userId uint) (*dto.UserRelInfo, error) {
 	var otherId uint
 	if rel.UserIdRequester == userId {
 		otherId = rel.UserIdRequested
@@ -69,7 +69,7 @@ func (r *RelService) ToUserRelDto(rel *rel.UserRel, userId uint) (*dto.UserRelDt
 		return nil, err
 	}
 
-	return &dto.UserRelDto{
+	return &dto.UserRelInfo{
 		Id:            rel.ID,
 		OtherUsername: otherUser.Username,
 		Status:        rel.Status,

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -23,8 +22,7 @@ type Config struct {
 	DBUser string
 	DBPass string
 	DBName string
-	DevEnv bool
-	Port   string
+	PORT   string
 }
 
 func main() {
@@ -45,13 +43,8 @@ func main() {
 	}
 
 	router := setupRouter(db, cfg)
-
-	host := "127.0.0.1"
-	if !cfg.DevEnv {
-		host = ""
-	}
-
-	router.Run(fmt.Sprintf("%s:%s", host, cfg.Port))
+	fmt.Printf("listening on port %s\n", cfg.PORT)
+	router.Run(fmt.Sprintf(":%s", cfg.PORT))
 }
 
 func loadConfig() (*Config, error) {
@@ -59,22 +52,16 @@ func loadConfig() (*Config, error) {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	isDevEnv, err := strconv.ParseBool(os.Getenv("DEV_ENV"))
-	if err != nil {
-		log.Fatalf("Error converting env variable: %v", err)
-	}
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8082"
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "8082"
 	}
 
 	cfg := &Config{
 		DBUser: os.Getenv("DBUSER"),
 		DBPass: os.Getenv("DBPASS"),
 		DBName: os.Getenv("DBNAME"),
-		DevEnv: isDevEnv,
-		Port:   port,
+		PORT: os.Getenv("PORT"),
 	}
 
 	return cfg, nil
