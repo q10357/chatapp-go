@@ -18,10 +18,6 @@ services:
       - "8082:8082"
     depends_on:
       - rel_db
-  ##gatewayservice:
-    ##build: ./gateservice
-    ##ports:
-     ## - 8081:8081
   rel_db: 
     image: mysql:8.0.34
     environment:
