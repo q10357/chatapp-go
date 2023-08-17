@@ -61,7 +61,7 @@ func loadConfig() (*Config, error) {
 		DBUser: os.Getenv("DBUSER"),
 		DBPass: os.Getenv("DBPASS"),
 		DBName: os.Getenv("DBNAME"),
-		PORT: os.Getenv("PORT"),
+		PORT:   os.Getenv("PORT"),
 	}
 
 	return cfg, nil
@@ -82,6 +82,8 @@ func setupRouter(db *sql.DB, cfg *Config) *gin.Engine {
 
 	router.Use(middleware.ValidateHeaders())
 	router.POST("/rel", graph.NewRelGraphRouter(relSchema))
+	//Use this, just new schema with relAdminType
+	//router.POST("/admin/rel", graph.NewRelGraphRouter(relSchema(change to admin)))
 
 	return router
 }
