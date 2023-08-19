@@ -16,6 +16,8 @@ type UserRelInfo struct {
 	usernameRequester  string `json:"usernameRequester"`
 	usernameRequested  string `json:"usernameRequested"`
 	Status        string `json:"status"`
+	CreatedAt       time.Time `json:"created"` (HASROLE ADMIN)
+	UpdatedAt       time.Time `json:"updated"` (HASROLE ADMIN)
 }*/
 
 //contracts
