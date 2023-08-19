@@ -8,6 +8,16 @@ type UserRelInfo struct {
 	IsRequester   bool   `json:"isRequester"`
 }
 
+//Maybe this?
+/*type UserRelInfo struct {
+	Id            uint   `json:"id"`
+	idRequester  uint      `json:"userRequester"`` (HASROLE ADMIN)
+	idRequested  uint      `json:"userRequested"` (HASROLE ADMIN)
+	usernameRequester  string `json:"usernameRequester"`
+	usernameRequested  string `json:"usernameRequested"`
+	Status        string `json:"status"`
+}*/
+
 //contracts
 type AddUserRel struct {
 	RequesterId uint `json:"requesterId"`
