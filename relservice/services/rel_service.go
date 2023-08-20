@@ -56,23 +56,21 @@ func (r *RelService) SetRelStatusToAccepted(id uint, userId uint) (*dto.UserRelI
 }
 
 func (r *RelService) ToUserRelResponse(rel *rel.UserRel, userId uint) (*dto.UserRelInfo, error) {
-	var otherId uint
-	if rel.UserIdRequester == userId {
-		otherId = rel.UserIdRequested
-	} else {
-		otherId = rel.UserIdRequester
-	}
-
-	otherUser, err := r.userRepo.GetUserById(otherId)
+	requester, err := r.userRepo.GetUserById(rel.UserIdRequester)
+	requested, err := r.userRepo.GetUserById(rel.UserIdRequested)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &dto.UserRelInfo{
-		Id:            rel.ID,
-		OtherUsername: otherUser.Username,
-		Status:        rel.Status,
-		IsRequester:   rel.UserIdRequester == userId,
+		Id:                rel.ID,
+		IdRequester:       requester.Id,
+		IdRequested:       requested.Id,
+		UsernameRequester: requester.Username,
+		UsernameRequested: requested.Username,
+		Status:            rel.Status,
+		CreatedAt:         rel.CreatedAt,
+		UpdatedAt:         rel.UpdatedAt,
 	}, nil
 }

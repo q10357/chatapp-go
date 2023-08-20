@@ -3,12 +3,12 @@ package rel
 import "time"
 
 type UserRel struct {
-	ID              uint      `json:"id"`
-	UserIdRequester uint      `json:"userRequester"`
-	UserIdRequested uint      `json:"userRequested"`
-	Status          string    `json:"status"`
-	CreatedAt       time.Time `json:"created"`
-	UpdatedAt       time.Time `json:"updated"`
+	ID              uint
+	UserIdRequester uint
+	UserIdRequested uint
+	Status          string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func NewUserRel(id uint, userIdRequester uint, userIdRequested uint) *UserRel {

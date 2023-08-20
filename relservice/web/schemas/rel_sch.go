@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/graphql-go/graphql"
+	"github.com/q10357/RelService/dto"
 	"github.com/q10357/RelService/services"
 )
 
@@ -19,19 +20,49 @@ func NewRelResolver(rs *services.RelService) *RelResolver {
 
 var relType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Rel",
+		Name: "UserRelInfo",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"otherUsername": &graphql.Field{
+			"userRequester": &graphql.Field{
+				Type: graphql.Int,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if !isAdmin(&p) {
+						return nil, fmt.Errorf("Access denied")
+					}
+					// If the user is an admin, fetch and return the value.
+					// For instance, if you have a struct holding your data:
+					data, _ := p.Source.(*dto.UserRelInfo)
+					return data.IdRequester, nil
+				},
+			},
+			"userRequested": &graphql.Field{
+				Type: graphql.Int,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if !isAdmin(&p) {
+						return nil, fmt.Errorf("Access denied")
+					}
+					// If the user is an admin, fetch and return the value.
+					// For instance, if you have a struct holding your data:
+					data, _ := p.Source.(*dto.UserRelInfo)
+					return data.IdRequested, nil
+				},
+			},
+			"usernameRequester": &graphql.Field{
+				Type: graphql.String,
+			},
+			"usernameRequested": &graphql.Field{
 				Type: graphql.String,
 			},
 			"status": &graphql.Field{
 				Type: graphql.String,
 			},
-			"isRequester": &graphql.Field{
-				Type: graphql.Boolean,
+			"created": &graphql.Field{
+				Type: graphql.String, // Or a custom date type if you prefer
+			},
+			"updated": &graphql.Field{
+				Type: graphql.String, // Or a custom date type if you prefer
 			},
 		},
 	},
@@ -53,6 +84,12 @@ func (r *RelResolver) getUserIdFromContext(p *graphql.ResolveParams) (*uint, err
 
 	userIDUint := uint(userID)
 	return &userIDUint, nil
+}
+
+func isAdmin(p *graphql.ResolveParams) bool {
+	// Inspect p.Context to determine if the user is an admin.
+	// For example, if you have a user role stored in the context, you might do:
+	return false
 }
 
 func (r *RelResolver) isUserPartOfRelationship(userID, relId uint) bool {
